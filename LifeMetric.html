@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeMetric — AI Study & Health Optimizer</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root{
+ --bg:#f5f7ff;--surface:#fff;--surface2:#f8f9ff;--text:#18223a;--muted:#71809d;
+ --primary:#6c63ff;--primary2:#8c7cff;--cyan:#35b8d8;--green:#20b486;--orange:#ffad42;
+ --red:#ef6262;--border:#e6e9f4;--shadow:0 12px 35px rgba(45,55,100,.08);
+ --radius:20px;--sidebar:250px;
+}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}
+#appShell{display:none}.app{display:grid;grid-template-columns:220px minmax(0,1fr) 330px;min-height:100vh}.sidebar{position:sticky;top:0;left:auto;width:220px;height:100vh;background:linear-gradient(180deg,#171d3b,#24245a);color:#fff;padding:22px 15px;z-index:20;display:flex;flex-direction:column}
+.brand{display:flex;gap:12px;align-items:center;padding:6px 10px 25px}.brand-icon{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#8e7dff,#50c7ff);display:grid;place-items:center;font-size:22px;box-shadow:0 8px 20px #0003}.brand b{font-size:18px}.brand small{display:block;color:#bfc5e8;margin-top:3px}
+.nav{display:flex;flex-direction:column;gap:7px}.nav button{background:transparent;color:#c8cdea;padding:12px 13px;border-radius:13px;text-align:left;display:flex;gap:12px;align-items:center;transition:.2s}.nav button:hover,.nav button.active{background:#ffffff18;color:#fff}.nav button.active{box-shadow:inset 3px 0 var(--cyan)}
+.user-mini{margin-top:auto;background:#ffffff12;border:1px solid #ffffff12;border-radius:16px;padding:12px;display:flex;gap:10px;align-items:center}.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#ff9dcc,#7c83ff);display:grid;place-items:center;color:white;font-weight:700}.user-mini small{color:#bfc5e8}
+.main{margin-left:0;width:auto;min-width:0;padding:16px 16px 35px}.topbar{display:flex;align-items:center;gap:15px;margin-bottom:20px}.search{flex:1;position:relative}.search input{width:100%;padding:13px 18px 13px 43px;border:1px solid var(--border);background:var(--surface);border-radius:14px;outline:none;color:var(--text)}.search span{position:absolute;left:15px;top:12px}
+.search-suggestions{position:absolute;left:0;right:0;top:calc(100% + 7px);background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 16px 35px rgba(45,55,100,.12);z-index:80;display:none;overflow:hidden}.search-suggestions.show{display:block}.search-suggestions button{display:flex;width:100%;padding:11px 14px;background:var(--surface);color:var(--text);text-align:left;border-bottom:1px solid var(--border);gap:10px;align-items:center}.search-suggestions button:last-child{border-bottom:0}.search-suggestions button:hover{background:var(--surface2)}.search-suggestions small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.top-actions{display:flex;gap:8px}.iconbtn{width:42px;height:42px;border-radius:13px;background:var(--surface);border:1px solid var(--border);color:var(--text)}
+.page{display:none}.page.active{display:block}.hero{background:linear-gradient(100deg,#e9edff,#f4f1ff 55%,#eaf8ff);border:1px solid #e1e5ff;border-radius:14px;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;overflow:hidden}.hero h1{margin:0 0 5px;font-size:21px}.hero p{margin:0;color:var(--muted)}.hero-art{font-size:64px;opacity:.8}
+.grid{display:grid;gap:16px}.cards{grid-template-columns:1.55fr repeat(3,minmax(0,1fr))}.mini-cards{grid-template-columns:repeat(6,minmax(0,1fr));margin-top:10px}.two{grid-template-columns:1.55fr 1fr}.three{grid-template-columns:repeat(3,1fr)}.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:19px}.panel h3{margin:0 0 14px;font-size:16px}.metric{display:flex;align-items:center;gap:13px}.metric-icon{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;font-size:23px}.metric-value{font-size:25px;font-weight:800}.muted{color:var(--muted);font-size:13px}.score-ring{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--primary) calc(var(--score)*1%),#edf0fa 0)}.score-ring:after{content:"";width:68px;height:68px;border-radius:50%;background:var(--surface);position:absolute}.ring-content{position:relative;z-index:1;text-align:center;font-weight:800}.badge{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:5px 9px;font-size:12px;font-weight:700}.good{background:#dff8ed;color:#15845f}.warn{background:#fff1d9;color:#a76700}.danger{background:#ffe3e3;color:#b93e3e}.info{background:#e5f4ff;color:#2376a5}
+.kpi{display:flex;justify-content:space-between;align-items:center}.kpi .left{display:flex;gap:10px;align-items:center}.bar{height:8px;border-radius:20px;background:#edf0f7;overflow:hidden}.bar i{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,var(--primary),var(--cyan))}
+.alert{display:flex;gap:10px;padding:12px;border-radius:13px;background:var(--surface2);margin-bottom:9px}.alert .aicon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:#fff0d7}.alert.d .aicon{background:#ffe4e4}.alert.g .aicon{background:#ddf8eb}.alert b{font-size:13px}.alert small{display:block;color:var(--muted);margin-top:3px}
+.btn{padding:10px 14px;border-radius:12px;font-weight:700;transition:.2s}.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{filter:brightness(.95);transform:translateY(-1px)}.btn-soft{background:#eef0ff;color:#564de0}.btn-danger{background:#ffe8e8;color:#b73f3f}.btn-green{background:#ddf8ed;color:#13865e}
+.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:720px}.table th,.table td{padding:11px;border-bottom:1px solid var(--border);text-align:left;font-size:13px}.table th{color:var(--muted);font-weight:700}.pill{padding:5px 8px;border-radius:8px;font-size:11px;font-weight:700}.subject{background:#eef0ff;color:#5148d8}.difficulty{background:#fff1d9;color:#a46700}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700}.field input,.field select,.field textarea{width:100%;border:1px solid var(--border);background:var(--surface2);border-radius:11px;padding:10px 12px;outline:none;color:var(--text)}.field textarea{min-height:100px;resize:vertical}.full{grid-column:1/-1}
+.tabs{display:flex;gap:7px;overflow:auto;margin-bottom:15px}.tabs button{white-space:nowrap;padding:9px 13px;background:var(--surface2);color:var(--muted);border-radius:10px}.tabs button.active{background:#e9e8ff;color:#554bdc;font-weight:700}
+.stat-number{font-size:27px;font-weight:800}.chartbox{height:290px}.chartbox canvas{max-height:290px}
+.schedule-grid{display:grid;grid-template-columns:90px repeat(7,minmax(100px,1fr));overflow:auto}.sg-head,.sg-time{padding:9px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);min-height:40px}.sg-head{text-align:center;font-weight:800}.sg-cell{min-height:72px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:5px}.event{padding:7px;border-radius:9px;background:#eceaff;color:#4e46c9;font-size:11px;margin-bottom:4px}.event.hard{background:#ffe7d8;color:#aa5a20}.event.rest{background:#ddf8ee;color:#137b5a}.event.ext{background:#e2f1ff;color:#2870a1}
+.optimization{display:grid;grid-template-columns:1fr 1fr;gap:15px}.compare{display:grid;grid-template-columns:1fr 1fr;gap:10px}.compare-card{border:1px solid var(--border);border-radius:14px;padding:14px}.compare-card.best{border:2px solid var(--green);background:#f0fff8}.big-score{font-size:38px;font-weight:900;color:var(--primary)}
+.chat{position:fixed;right:24px;bottom:92px;top:auto;width:380px;max-width:calc(100vw - 32px);height:min(650px,calc(100vh - 125px));background:var(--surface);border:1px solid var(--border);border-radius:22px;box-shadow:0 25px 70px #15204430;z-index:90;display:none;flex-direction:column;overflow:hidden}.chat.open{display:flex}.chat-head{padding:15px;background:linear-gradient(135deg,#655cf0,#4abce0);color:#fff;display:flex;align-items:center;justify-content:space-between}.chat-title{display:flex;gap:10px;align-items:center}.bot-avatar{width:39px;height:39px;border-radius:13px;background:#ffffff2b;display:grid;place-items:center}.chat-head button{background:#ffffff22;color:#fff;width:32px;height:32px;border-radius:9px}.chat-body{flex:1;overflow:auto;padding:14px;background:var(--surface2)}.msg{display:flex;margin:9px 0}.msg.user{justify-content:flex-end}.bubble{max-width:84%;padding:10px 12px;border-radius:15px;font-size:13px;line-height:1.5;white-space:pre-wrap}.msg.bot .bubble{background:var(--surface);border:1px solid var(--border)}.msg.user .bubble{background:var(--primary);color:#fff}.chat-suggest{display:flex;gap:6px;padding:8px;overflow:auto;border-top:1px solid var(--border)}.suggest{white-space:nowrap;background:#eef0ff;color:#5148d8;border-radius:99px;padding:7px 9px;font-size:11px}.chat-input{display:flex;gap:7px;padding:10px;border-top:1px solid var(--border)}.chat-input input{flex:1;border:1px solid var(--border);border-radius:12px;padding:10px;background:var(--surface2);outline:none}.send{width:43px;background:var(--primary);color:#fff;border-radius:12px}
+.fab{position:fixed;right:24px;bottom:22px;width:58px;height:58px;display:grid;place-items:center;border-radius:19px;background:linear-gradient(135deg,var(--primary),#4cbce0);color:#fff;box-shadow:0 12px 30px #645cff55;font-size:24px;z-index:29}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}.switch{width:47px;height:26px;background:#dfe3ef;border-radius:99px;padding:3px}.switch i{display:block;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}.switch.on{background:var(--primary)}.switch.on i{transform:translateX(21px)}
+.toast{position:fixed;top:22px;right:22px;background:#18223a;color:#fff;padding:12px 16px;border-radius:12px;z-index:100;opacity:0;transform:translateY(-10px);transition:.25s}.toast.show{opacity:1;transform:translateY(0)}
+.empty{text-align:center;padding:35px;color:var(--muted)}.flex{display:flex;align-items:center;gap:10px}.between{justify-content:space-between}.actions{display:flex;gap:8px;flex-wrap:wrap}.mt{margin-top:15px}.mb{margin-bottom:15px}
+.dark{--bg:#101426;--surface:#171c31;--surface2:#20263d;--text:#edf0ff;--muted:#a6aec8;--border:#2b3350;--shadow:0 12px 35px #0005}.dark .hero{background:linear-gradient(135deg,#20204a,#143044)}.dark .score-ring:after{background:var(--surface)}
+@media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}.mini-cards{grid-template-columns:repeat(3,1fr)}.two,.optimization{grid-template-columns:1fr}.sidebar{width:210px}.main{margin-left:210px;width:calc(100% - 210px)}}
+@media(max-width:1180px){.app{display:flex}.right-custom{display:none}.chat{right:10px;bottom:82px;width:calc(100vw - 20px);height:70vh;z-index:90}.main{margin-left:220px;width:calc(100% - 220px)}.fab{display:grid!important}}
+@media(max-width:720px){.sidebar{width:72px;position:fixed;padding:15px 9px}.brand b,.brand small,.nav button span:last-child,.user-mini div:not(.avatar){display:none}.brand{padding:5px 5px 20px}.brand-icon{width:48px}.nav button{justify-content:center}.user-mini{justify-content:center}.main{margin-left:72px;width:calc(100% - 72px);padding:15px}.hero{padding:18px}.hero-art{display:none}.cards{grid-template-columns:1fr 1fr}.mini-cards{grid-template-columns:1fr 1fr}.three,.form-grid{grid-template-columns:1fr}.topbar .search{display:none}.chat{right:10px;bottom:82px;width:calc(100vw - 20px);height:70vh}.fab{right:15px;bottom:15px}.compare{grid-template-columns:1fr}}
+
+.right-custom{grid-column:3;grid-row:1;align-self:end;margin:0 14px 16px;z-index:2}.right-custom .panel{box-shadow:0 10px 30px rgba(45,55,100,.07)}
+.dark .chartbox canvas{filter:none}.dark .panel h3,.dark .hero h1{color:var(--text)}
+@media(min-width:1181px){.right-custom{display:block}}
+
+/* ===== AUTH ===== */
+.auth-screen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#eef1ff,#f8fbff 55%,#eefaff);display:grid;place-items:center;padding:20px;}
+.auth-card{width:min(430px,100%);background:#fff;border:1px solid #e2e6f2;border-radius:28px;box-shadow:0 25px 80px rgba(48,61,120,.16);padding:30px}
+.auth-logo{width:62px;height:62px;border-radius:20px;background:linear-gradient(135deg,#6c63ff,#35b8d8);display:grid;place-items:center;color:#fff;font-size:31px;margin:0 auto 14px;box-shadow:0 12px 25px rgba(108,99,255,.25)}
+.auth-card h1{text-align:center;margin:0;font-size:25px}.auth-sub{text-align:center;color:#71809d;margin:7px 0 24px;font-size:13px}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;background:#f2f4fb;border-radius:13px;padding:4px;margin-bottom:18px}.auth-tabs button{padding:10px;border-radius:10px;background:transparent;color:#71809d;font-weight:700}.auth-tabs button.active{background:#fff;color:#5a51df;box-shadow:0 3px 12px #4d59a414}.auth-form{display:grid;gap:12px}.auth-form label{font-size:12px;color:#71809d;font-weight:700}.auth-form input{width:100%;padding:12px 13px;border:1px solid #e1e5f0;border-radius:12px;background:#fafbff;outline:none}.auth-form input:focus{border-color:#6c63ff;box-shadow:0 0 0 3px #6c63ff14}.auth-msg{min-height:20px;color:#c54a4a;font-size:12px}.auth-msg.ok{color:#16845f}.auth-demo{margin-top:15px;text-align:center;color:#8a94aa;font-size:11px}.auth-logout{background:#ffe8e8;color:#b73f3f;padding:8px 11px;border-radius:10px;font-weight:700;margin-top:8px}
+.onboarding{position:fixed;inset:0;z-index:9998;background:#101735aa;display:none;place-items:center;padding:20px}.onboarding.show{display:grid}.onboard-card{width:min(650px,100%);background:#fff;border-radius:24px;padding:25px;box-shadow:0 25px 80px #11193644}.onboard-card h2{margin:0 0 5px}.onboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.onboard-grid .field input,.onboard-grid .field select{width:100%;padding:11px;border:1px solid #e1e5f0;border-radius:11px;background:#fafbff}.onboard-full{grid-column:1/-1}@media(max-width:560px){.onboard-grid{grid-template-columns:1fr}.onboard-full{grid-column:auto}}
+
+</style>
+</head>
+<body>
+
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">🛡️</div>
+    <h1>LifeMetric</h1>
+    <div class="auth-sub">AI + Toán học tối ưu thời khóa biểu vì sức khỏe học sinh</div>
+    <div class="auth-tabs">
+      <button id="loginTab" class="active" onclick="showAuthTab('login')">Đăng nhập</button>
+      <button id="registerTab" onclick="showAuthTab('register')">Đăng ký</button>
+    </div>
+    <form id="loginForm" class="auth-form" onsubmit="loginUser(event)">
+      <div><label>Tài khoản / Email</label><input id="loginUsername" required placeholder="Ví dụ: tiana@gmail.com"></div>
+      <div><label>Mật khẩu</label><input id="loginPassword" type="password" required placeholder="Nhập mật khẩu"></div>
+      <div id="loginMsg" class="auth-msg"></div>
+      <button class="btn btn-primary" type="submit">Đăng nhập →</button>
+    </form>
+    <form id="registerForm" class="auth-form" style="display:none" onsubmit="registerUser(event)">
+      <div><label>Tên hiển thị</label><input id="regName" required placeholder="Tên của bạn"></div>
+      <div><label>Email / Tài khoản</label><input id="registerUsername" type="email" required placeholder="ban@example.com"></div>
+      <div><label>Mật khẩu</label><input id="regPass" type="password" minlength="4" required placeholder="Ít nhất 4 ký tự"></div>
+      <div><label>Nhập lại mật khẩu</label><input id="regPass2" type="password" minlength="4" required placeholder="Nhập lại mật khẩu"></div>
+      <div id="regMsg" class="auth-msg"></div>
+      <button class="btn btn-primary" type="submit">Tạo tài khoản & bắt đầu ✨</button>
+    </form>
+    <div class="auth-demo">Tài khoản được lưu trên thiết bị này. Không cần email xác thực.</div>
+  </div>
+</div>
+<div id="onboarding" class="onboarding">
+ <div class="onboard-card">
+  <h2>👋 Thiết lập LifeMetric</h2><p class="muted">Nhập một vài thông tin để hệ thống phân tích lịch học chính xác hơn.</p>
+  <div class="onboard-grid">
+   <div class="field"><label>Họ và tên</label><input id="obName" placeholder="Tên của bạn"></div>
+   <div class="field"><label>Lớp</label><input id="obGrade" placeholder="7A1"></div>
+   <div class="field"><label>Trường</label><input id="obSchool" placeholder="Tên trường"></div>
+   <div class="field"><label>Số môn học</label><input id="obSubjects" type="number" min="1" value="8"></div>
+   <div class="field"><label>Giờ tự học mong muốn/ngày</label><input id="obStudy" type="number" min="0" step="0.5" value="2"></div>
+   <div class="field"><label>Giờ ngủ mong muốn/ngày</label><input id="obSleep" type="number" min="1" max="14" step="0.5" value="8"></div>
+   <div class="field onboard-full"><label>Mục tiêu học tập</label><input id="obGoal" placeholder="Ví dụ: Cân bằng học tập và sức khỏe"></div>
+  </div>
+  <button class="btn btn-primary" style="width:100%" onclick="finishOnboarding()">Bắt đầu sử dụng LifeMetric 🚀</button>
+ </div>
+</div>
+
+<div class="app" id="appShell">
+<aside class="sidebar">
+  <div class="brand"><div class="brand-icon">🎓</div><div><b>LifeMetric</b><small>Học thông minh · Sống cân bằng</small></div></div>
+  <nav class="nav" id="nav"></nav>
+  <div class="user-mini"><div class="avatar" id="sideAvatar">T</div><div><b id="sideName">Học sinh</b><small id="sideClass">Lớp 7</small></div></div>
+</aside>
+
+<main class="main">
+<div class="topbar">
+  <div class="search"><span>🔎</span><input id="globalSearch" autocomplete="off" placeholder="Tìm môn học, cảnh báo, chức năng..."><div id="searchSuggestions" class="search-suggestions"></div></div>
+  <div class="top-actions"><button class="iconbtn" onclick="toggleTheme()" title="Đổi giao diện">🌙</button><button class="iconbtn" onclick="openChat()">🤖</button></div>
+</div>
+
+<section class="page active" id="page-dashboard">
+  <div class="hero"><div><h1>Xin chào, <span id="heroName">Tiana</span>! 👋</h1><p>LifeMetric đang giúp bạn xây dựng một lịch học hiệu quả và cân bằng hơn.</p></div><div class="hero-art">📚✨</div></div>
+  <div class="grid cards">
+    <div class="panel"><div class="metric"><div class="score-ring" id="overallRing" style="--score:87"><div class="ring-content"><span id="overall">87</span><small>/100</small></div></div><div><b>Điểm cân bằng</b><div class="mt"><span class="badge good" id="overallBadge">Tốt</span></div></div></div></div>
+    <div class="panel"><div class="metric"><div class="metric-icon" style="background:#ffe8e8">📚</div><div><div class="muted">Tải học tập</div><div class="metric-value" id="loadScore">72</div></div></div><div class="bar mt"><i id="loadBar" style="width:72%"></i></div></div>
+    <div class="panel"><div class="metric"><div class="metric-icon" style="background:#e4f5ff">☕</div><div><div class="muted">Nghỉ ngơi</div><div class="metric-value" id="restScore">89</div></div></div><div class="bar mt"><i id="restBar" style="width:89%"></i></div></div>
+    <div class="panel"><div class="metric"><div class="metric-icon" style="background:#e1faef">❤️</div><div><div class="muted">Sức khỏe</div><div class="metric-value" id="healthScore">85</div></div></div><div class="bar mt"><i id="healthBar" style="width:85%"></i></div></div>
+  </div>
+  <div class="grid mini-cards">
+    <div class="panel input-stat"><label>Học trên lớp</label><input id="dailyClassInput" type="number" min="0" max="16" step="0.5" value="6" oninput="updateDailyInputs()"><div class="muted">giờ mỗi ngày</div></div>
+    <div class="panel input-stat"><label>Tự học</label><input id="dailySelfInput" type="number" min="0" max="12" step="0.5" value="2" oninput="updateDailyInputs()"><div class="muted">giờ mỗi ngày</div></div>
+    <div class="panel input-stat"><label>Nghỉ ngơi</label><input id="dailyRestInput" type="number" min="0" max="12" step="0.5" value="1.5" oninput="updateDailyInputs()"><div class="muted">giờ mỗi ngày</div></div>
+    <div class="panel input-stat"><label>Ngủ</label><input id="dailySleepInput" type="number" min="4" max="12" step="0.5" value="8" oninput="updateDailyInputs()"><div class="muted">giờ mỗi ngày</div></div>
+    <div class="panel input-stat"><label>Môn học</label><input id="subjectGoalInput" type="number" min="1" max="30" step="1" value="8" oninput="updateDailyInputs()"><div class="muted">môn đang theo dõi</div></div>
+    <div class="panel input-stat"><label>Cảnh báo</label><div class="stat-number" id="alertCount">0</div><div class="muted">tự động phát hiện</div></div>
+  </div>
+  <div class="grid two mt">
+    <div class="panel"><div class="flex between"><h3>Tải học tập trong tuần</h3><span class="badge info">7 ngày</span></div><div class="chartbox"><canvas id="weeklyChart"></canvas></div></div>
+    <div class="panel"><div class="flex between"><h3>Cảnh báo gần đây</h3><button class="btn btn-soft" onclick="navigate('analysis')">Xem tất cả</button></div><div id="dashboardAlerts"></div></div>
+  </div>
+</section>
+
+<section class="page" id="page-schedule">
+  <div class="flex between mb"><div><h2>📅 Thời khóa biểu</h2><p class="muted">Quản lý lịch học, tự học, nghỉ và hoạt động.</p></div><button class="btn btn-primary" onclick="openScheduleForm()">＋ Thêm hoạt động</button></div>
+  <div class="panel mb"><div class="flex between"><h3>Lịch tuần</h3><span class="badge info">Tự động cập nhật</span></div><div class="schedule-grid" id="scheduleGrid"></div></div>
+  <div class="panel"><h3>Danh sách hoạt động</h3><div class="table-wrap"><table class="table"><thead><tr><th>Môn/hoạt động</th><th>Ngày</th><th>Thời gian</th><th>Loại</th><th>Độ khó</th><th></th></tr></thead><tbody id="scheduleTable"></tbody></table></div></div>
+</section>
+
+<section class="page" id="page-analysis">
+  <div class="flex between mb"><div><h2>📊 Phân tích học tập</h2><p class="muted">Các chỉ số được tính trực tiếp từ dữ liệu lịch học.</p></div><button class="btn btn-primary" type="button" onclick="recalculateAndShow()">↻ Phân tích lại</button></div>
+  <div class="grid three">
+    <div class="panel"><div class="muted">Study Load Index</div><div class="stat-number" id="aLoad">72/100</div><div class="bar mt"><i id="aLoadBar" style="width:72%"></i></div><p class="muted mt">Tổng tải = thời lượng × độ khó, có điều chỉnh theo mật độ.</p></div>
+    <div class="panel"><div class="muted">Balance Index</div><div class="stat-number" id="aBalance">87/100</div><div class="bar mt"><i id="aBalanceBar" style="width:87%"></i></div><p class="muted mt">Cân bằng học tập, nghỉ ngơi, ngủ và tính khả thi.</p></div>
+    <div class="panel"><div class="muted">Health Index</div><div class="stat-number" id="aHealth">85/100</div><div class="bar mt"><i id="aHealthBar" style="width:85%"></i></div><p class="muted mt">Chỉ số sinh hoạt dựa trên dữ liệu người dùng nhập.</p></div>
+  </div>
+  <div class="grid two mt"><div class="panel"><h3>Phân bố độ khó môn học</h3><div class="chartbox"><canvas id="difficultyChart"></canvas></div></div><div class="panel"><h3>Phát hiện vấn đề</h3><div id="analysisAlerts"></div></div></div>
+</section>
+
+<section class="page" id="page-health">
+  <div class="flex between mb"><div><h2>❤️ Sức khỏe & cân bằng</h2><p class="muted">Đây là đánh giá thói quen sinh hoạt, không phải chẩn đoán y tế.</p></div></div>
+  <div class="grid two"><div class="panel"><h3>Bản đồ cân bằng</h3><div class="chartbox"><canvas id="radarChart"></canvas></div></div><div class="panel"><h3>Tổng quan sinh hoạt</h3><div id="healthDetails"></div></div></div>
+</section>
+
+<section class="page" id="page-optimize">
+  <div class="flex between mb"><div><h2>🧮 Tối ưu thời khóa biểu</h2><p class="muted">Tạo và so sánh các phương án hợp lệ bằng mô hình điểm đa mục tiêu.</p></div><button class="btn btn-primary" onclick="optimize()">✨ Chạy tối ưu</button></div>
+  <div class="optimization"><div class="panel"><h3>Hàm mục tiêu</h3><div class="alert g"><div class="aicon">✓</div><div><b>Optimization Score ∈ [0,100]</b><small>w₁·StudyEfficiency + w₂·Rest + w₃·Sleep + w₄·Health + w₅·Feasibility</small></div></div><h3 class="mt">Ràng buộc</h3><div id="constraints"></div></div><div class="panel"><h3>Kết quả so sánh</h3><div id="optimizationResult" class="empty">Nhấn “Chạy tối ưu” để tạo ít nhất 10 phương án và chọn phương án tốt nhất.</div></div></div>
+</section>
+
+<section class="page" id="page-ai">
+  <div class="flex between mb"><div><h2>🤖 AI Coach</h2><p class="muted">Giải thích dữ liệu bằng ngôn ngữ dễ hiểu.</p></div><button class="btn btn-soft" onclick="openChat()">Mở StudyBot</button></div>
+  <div class="grid two"><div class="panel"><h3>Phân tích tự động</h3><div id="coachText"></div></div><div class="panel"><h3>Gợi ý cải thiện</h3><div id="coachTips"></div></div></div>
+</section>
+
+<section class="page" id="page-stats">
+  <div class="flex between mb"><div><h2>📈 Thống kê dữ liệu</h2><p class="muted">Theo dõi xu hướng học tập và sinh hoạt.</p></div><div class="tabs" id="statsTabs"><button type="button" class="active" data-period="7" onclick="setStatsPeriod('7')">7 ngày</button><button type="button" data-period="30" onclick="setStatsPeriod('30')">30 ngày</button><button type="button" data-period="all" onclick="setStatsPeriod('all')">Tất cả</button></div><div id="statsPeriodNote" class="muted" style="font-size:11px;margin-top:6px">Đang hiển thị lịch 7 ngày hiện tại.</div></div>
+  <div class="grid three"><div class="panel"><div class="muted">Tổng giờ học</div><div class="stat-number" id="totalStudy">42h</div></div><div class="panel"><div class="muted">Ngủ trung bình</div><div class="stat-number" id="avgSleep">8h</div></div><div class="panel"><div class="muted">Số lần tối ưu</div><div class="stat-number" id="optCount">0</div></div></div>
+  <div class="grid two mt"><div class="panel"><h3>Học – nghỉ – ngủ</h3><div class="chartbox"><canvas id="statsChart"></canvas></div></div><div class="panel"><h3>Điểm cân bằng</h3><div class="chartbox"><canvas id="balanceChart"></canvas></div></div></div>
+</section>
+
+<section class="page" id="page-settings">
+  <div class="mb"><h2>⚙️ Cài đặt & cá nhân hóa</h2><p class="muted">Điều chỉnh LifeMetric theo cách bạn học.</p></div>
+  <div class="grid two"><div class="panel"><h3>Hồ sơ</h3><div class="form-grid"><div class="field"><label>Tên</label><input id="profileName"></div><div class="field"><label>Lớp</label><input id="profileGrade" placeholder="7A1"></div><div class="field"><label>Trường</label><input id="profileSchool"></div><div class="field"><label>Mục tiêu</label><input id="profileGoal" placeholder="Học hiệu quả hơn"></div><div class="field"><label>Giờ ngủ mục tiêu</label><input id="targetSleep" type="number" step=".5" min="4" max="12"></div><div class="field"><label>Giờ tự học mục tiêu</label><input id="targetStudy" type="number" step=".5" min="0" max="8"></div></div><button class="btn btn-primary mt" onclick="saveProfile()">Lưu hồ sơ</button></div>
+  <div class="panel"><h3>Giao diện</h3><div class="settings-row"><span>Chế độ tối</span><div class="switch" id="darkSwitch" onclick="toggleTheme()"><i></i></div></div><div class="settings-row"><span>Hiệu ứng chuyển động</span><div class="switch on" onclick="this.classList.toggle('on')"><i></i></div></div><div class="settings-row"><span>Thông báo cảnh báo</span><div class="switch on"><i></i></div></div><div class="settings-row"><span>Màu chủ đạo</span><div class="actions"><button class="btn btn-soft" onclick="setAccent('#6c63ff')">Tím</button><button class="btn btn-soft" onclick="setAccent('#0ea5a8')">Xanh</button><button class="btn btn-soft" onclick="setAccent('#e85d9e')">Hồng</button></div></div><div class="settings-row"><span>Cỡ chữ</span><div class="actions"><button class="btn btn-soft" onclick="changeFont(-1)">A−</button><button class="btn btn-soft" onclick="changeFont(1)">A+</button></div></div></div></div>
+<div class="panel mt"><div class="flex between"><div><b>Tài khoản</b><div class="muted">Đang đăng nhập trên thiết bị này.</div></div><button class="auth-logout" onclick="logoutUser()">Đăng xuất</button></div></div>
+</section>
+</main>
+<div class="chat" id="chat">
+ <div class="chat-head"><div class="chat-title"><div class="bot-avatar">🤖</div><div><b>StudyBot</b><small style="display:block;opacity:.8">Trợ lý học tập của bạn</small></div></div><button onclick="closeChat()">×</button></div>
+ <div class="chat-body" id="chatBody"></div>
+ <div class="chat-suggest"><button class="suggest" onclick="quickAsk('Hôm nay mình có quá tải không?')">Hôm nay có quá tải?</button><button class="suggest" onclick="quickAsk('Tại sao mình bị cảnh báo?')">Tại sao bị cảnh báo?</button><button class="suggest" onclick="quickAsk('Hãy tối ưu lịch học của mình')">Tối ưu lịch</button></div>
+ <div class="chat-input"><input id="chatInput" placeholder="Hỏi StudyBot về lịch học của bạn..." onkeydown="if(event.key==='Enter')sendChat()"><button class="send" onclick="sendChat()">➤</button></div>
+</div>
+<div class="right-custom" id="rightCustom">
+  <div class="panel"><div class="flex between"><h3 style="margin:0">🎨 Tùy chỉnh giao diện</h3></div>
+  <div class="muted" style="margin-top:10px;font-size:11px">Chế độ hiển thị</div>
+  <div class="actions mt"><button class="btn btn-soft" onclick="setThemeMode('light')">Sáng</button><button class="btn btn-soft" onclick="setThemeMode('dark')">Tối</button><button class="btn btn-soft" onclick="setThemeMode('auto')">Tự động</button></div>
+  <div class="muted mt" style="font-size:11px">Màu chủ đạo</div><div class="actions mt"><button class="btn btn-soft" onclick="setAccent('#6c63ff')">● Tím</button><button class="btn btn-soft" onclick="setAccent('#4f7ff7')">● Xanh</button><button class="btn btn-soft" onclick="setAccent('#e85d9e')">● Hồng</button></div>
+  <div class="muted mt" style="font-size:11px">Cỡ chữ</div><div class="actions mt"><button class="btn btn-soft" onclick="changeFont(-1)">A−</button><button class="btn btn-soft" onclick="changeFont(1)">A+</button></div>
+  </div>
+</div>
+
+</div>
+
+<button class="fab" id="chatOpenButton" onclick="openChat()" title="Mở StudyBot">🤖</button>
+
+<div class="toast" id="toast"></div>
+
+<div id="modal" style="display:none;position:fixed;inset:0;background:#07102280;z-index:50;place-items:center;padding:20px">
+<div class="panel" style="width:560px;max-width:100%;max-height:90vh;overflow:auto">
+<div class="flex between mb"><h3 id="modalTitle">Thêm hoạt động</h3><button class="iconbtn" onclick="closeModal()">×</button></div>
+<div class="form-grid">
+<div class="field"><label>Môn / hoạt động</label><input id="fSubject" placeholder="Toán"></div>
+<div class="field"><label>Ngày</label><select id="fDay"><option>Thứ 2</option><option>Thứ 3</option><option>Thứ 4</option><option>Thứ 5</option><option>Thứ 6</option><option>Thứ 7</option><option>CN</option></select></div>
+<div class="field"><label>Bắt đầu</label><input id="fStart" type="time" value="16:00"></div>
+<div class="field"><label>Kết thúc</label><input id="fEnd" type="time" value="17:00"></div>
+<div class="field"><label>Độ khó (1–5)</label><input id="fDiff" type="number" min="1" max="5" value="3"></div>
+<div class="field"><label>Loại</label><select id="fType"><option value="class">Học trên lớp</option><option value="self">Tự học</option><option value="rest">Nghỉ</option><option value="ext">Ngoại khóa</option></select></div>
+</div><div class="actions mt"><button class="btn btn-primary" onclick="saveSchedule()">Lưu</button><button class="btn btn-soft" onclick="closeModal()">Hủy</button></div>
+</div></div>
+
+<script>
+const DAYS=["Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7","CN"];
+const NAV=[["dashboard","🏠","Dashboard"],["schedule","📅","Thời khóa biểu"],["analysis","📊","Phân tích"],["health","❤️","Sức khỏe"],["optimize","🧮","Tối ưu"],["ai","🤖","AI Coach"],["stats","📈","Thống kê"],["settings","⚙️","Cài đặt"]];
+let state={
+ profile:{name:"Tiana",grade:"7",school:"",goal:"Học hiệu quả hơn",targetSleep:8,targetStudy:2,dailyClass:6,dailySelf:2,dailyRest:1.5,subjectGoal:8},
+ schedules:[],
+ optCount:0, alerts:[], scores:{load:72,rest:89,health:85,balance:87}, chat:[], theme:"light",font:15
+};
+const demo=[
+["Toán","Thứ 2","07:00","08:00",4,"class"],["Ngữ văn","Thứ 2","08:00","09:00",3,"class"],["Tiếng Anh","Thứ 2","09:00","10:00",3,"class"],["Tự học Toán","Thứ 2","16:00","17:00",4,"self"],
+["Khoa học","Thứ 3","07:00","08:00",5,"class"],["Toán","Thứ 3","08:00","09:00",4,"class"],["Tiếng Anh","Thứ 3","09:00","10:00",4,"class"],["Tự học Khoa học","Thứ 3","16:00","18:00",5,"self"],
+["Lịch sử","Thứ 4","07:00","08:00",3,"class"],["Địa lý","Thứ 4","08:00","09:00",3,"class"],["Tin học","Thứ 4","09:00","10:00",2,"class"],["Tự học","Thứ 4","16:00","17:00",3,"self"],
+["Toán","Thứ 5","07:00","08:00",4,"class"],["Ngữ văn","Thứ 5","08:00","09:00",3,"class"],["Tự học Anh","Thứ 5","16:00","17:00",3,"self"],
+["Khoa học","Thứ 6","07:00","08:00",5,"class"],["Tiếng Anh","Thứ 6","08:00","09:00",4,"class"],["Tự học","Thứ 6","16:00","17:00",3,"self"]
+].map((x,i)=>({id:i+1,subject:x[0],day:x[1],start:x[2],end:x[3],difficulty:x[4],type:x[5]}));
+let charts={}, editingId=null;
+let statsPeriod="7";
+let currentAccount = null;
+
+function accountStore(){
+  try { return JSON.parse(localStorage.getItem("lifemetric_accounts") || "{}"); }
+  catch(e){ return {}; }
+}
+function saveAccounts(accounts){
+  localStorage.setItem("lifemetric_accounts", JSON.stringify(accounts));
+}
+function normalizeUser(v){ return (v||"").trim().toLowerCase(); }
+function authKey(){
+  const u = currentAccount || localStorage.getItem("lifemetric_current_user") || "guest";
+  return "lifemetric_state_" + normalizeUser(u).replace(/[^a-z0-9@._-]/g,"_");
+}
+function showAuthTab(mode){
+  const login = document.getElementById("loginForm");
+  const reg = document.getElementById("registerForm");
+  const lt = document.getElementById("loginTab");
+  const rt = document.getElementById("registerTab");
+  login.style.display = mode === "login" ? "grid" : "none";
+  reg.style.display = mode === "register" ? "grid" : "none";
+  lt.classList.toggle("active", mode === "login");
+  rt.classList.toggle("active", mode === "register");
+  document.getElementById("loginMsg").textContent = "";
+  document.getElementById("regMsg").textContent = "";
+}
+function showAuthMsg(id,msg,ok=false){
+  const el=document.getElementById(id); el.textContent=msg; el.className="auth-msg"+(ok?" ok":"");
+}
+function loginUser(event){
+  if(event) event.preventDefault();
+  const username=normalizeUser(document.getElementById("loginUsername").value);
+  const password=document.getElementById("loginPassword").value;
+  if(!username || !password){ showAuthMsg("loginMsg","Vui lòng nhập tài khoản và mật khẩu."); return false; }
+  const accounts=accountStore();
+  const acc=accounts[username];
+  if(!acc || acc.password !== password){
+    showAuthMsg("loginMsg","❌ Tài khoản hoặc mật khẩu không đúng.");
+    return false;
+  }
+  currentAccount=username;
+  localStorage.setItem("lifemetric_current_user",username);
+  localStorage.setItem("lifemetric_session","1");
+  state=defaultStateForUser(acc);
+  const saved=localStorage.getItem(authKey());
+  if(saved){ try{ state={...state,...JSON.parse(saved),profile:{...state.profile,...(JSON.parse(saved).profile||{})}}; }catch(e){} }
+  state.profile.name=state.profile.name || acc.name || "Học sinh";
+  state.profile.email=username;
+  localStorage.setItem(authKey(),JSON.stringify(state));
+  document.getElementById("authScreen").style.display="none";
+  document.getElementById("appShell").style.display="grid";
+  load();
+  if(!acc.onboarded){
+    document.getElementById("obName").value=acc.name||"";
+    document.getElementById("onboarding").classList.add("show");
+  }
+  toast("Đăng nhập thành công 👋");
+  return false;
+}
+function registerUser(event){
+  if(event) event.preventDefault();
+  const name=document.getElementById("regName").value.trim();
+  const username=normalizeUser(document.getElementById("registerUsername").value);
+  const p=document.getElementById("regPass").value;
+  const p2=document.getElementById("regPass2").value;
+  if(!name || !username || !p || !p2){ showAuthMsg("regMsg","Vui lòng điền đầy đủ thông tin."); return false; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username)){ showAuthMsg("regMsg","Email/tài khoản chưa đúng định dạng."); return false; }
+  if(p.length<4){ showAuthMsg("regMsg","Mật khẩu cần ít nhất 4 ký tự."); return false; }
+  if(p!==p2){ showAuthMsg("regMsg","Hai mật khẩu chưa giống nhau."); return false; }
+  const accounts=accountStore();
+  if(accounts[username]){ showAuthMsg("regMsg","Tài khoản này đã tồn tại. Hãy đăng nhập."); return false; }
+  accounts[username]={name,password:p,onboarded:false,createdAt:Date.now()};
+  saveAccounts(accounts);
+  currentAccount=username;
+  localStorage.setItem("lifemetric_current_user",username);
+  localStorage.setItem("lifemetric_session","1");
+  state=defaultStateForUser(accounts[username]);
+  state.profile.name=name; state.profile.email=username;
+  persist();
+  document.getElementById("authScreen").style.display="none";
+  document.getElementById("appShell").style.display="grid";
+  load();
+  document.getElementById("obName").value=name;
+  document.getElementById("onboarding").classList.add("show");
+  toast("Đăng ký thành công 🎉");
+  return false;
+}
+function defaultStateForUser(acc){
+  return {profile:{name:acc?.name||"Học sinh",grade:"7",school:"",goal:"Học hiệu quả hơn",targetSleep:8,targetStudy:2,dailyClass:6,dailySelf:2,dailyRest:1.5,dailySleep:8,subjectGoal:8,email:acc?.email||""},schedules:[],optCount:0,alerts:[],scores:{load:72,rest:89,health:85,balance:87},chat:[],theme:"light",font:15};
+}
+function finishOnboarding(){
+  state.profile.name=document.getElementById("obName").value.trim()||state.profile.name||"Học sinh";
+  state.profile.grade=document.getElementById("obGrade").value.trim()||"7";
+  state.profile.school=document.getElementById("obSchool").value.trim();
+  state.profile.subjectCount=Number(document.getElementById("obSubjects").value)||8;
+  state.profile.targetStudy=Number(document.getElementById("obStudy").value)||2;
+  state.profile.targetSleep=Number(document.getElementById("obSleep").value)||8;
+  state.profile.goal=document.getElementById("obGoal").value.trim()||"Học hiệu quả hơn";
+  persist();
+  const accounts=accountStore();
+  if(currentAccount && accounts[currentAccount]){accounts[currentAccount].name=state.profile.name;accounts[currentAccount].onboarded=true;saveAccounts(accounts);}
+  document.getElementById("onboarding").classList.remove("show");
+  renderAll();
+  toast("Thiết lập hoàn tất 🚀");
+}
+function logoutUser(){
+  persist();
+  localStorage.removeItem("lifemetric_session");
+  localStorage.removeItem("lifemetric_current_user");
+  currentAccount=null;
+  document.getElementById("appShell").style.display="none";
+  document.getElementById("onboarding").classList.remove("show");
+  document.getElementById("authScreen").style.display="grid";
+  document.getElementById("loginPassword").value="";
+  showAuthTab("login");
+  toast("Đã đăng xuất");
+}
+function bootAuth(){
+  const session=localStorage.getItem("lifemetric_session");
+  const user=localStorage.getItem("lifemetric_current_user");
+  if(session==="1" && user && accountStore()[user]){
+    currentAccount=user;
+    document.getElementById("authScreen").style.display="none";
+    document.getElementById("appShell").style.display="grid";
+    load();
+  }else{
+    document.getElementById("authScreen").style.display="grid";
+    document.getElementById("appShell").style.display="none";
+    showAuthTab("login");
+  }
+}
+
+function load(){
+ const saved=localStorage.getItem(authKey());
+ if(saved){try{state={...state,...JSON.parse(saved)};}catch(e){}}
+ state.profile=state.profile||{};
+ const defaults={dailyClass:6,dailySelf:2,dailyRest:1.5,dailySleep:8,subjectGoal:8,targetSleep:8,targetStudy:2};
+ Object.keys(defaults).forEach(k=>{if(state.profile[k]===undefined||state.profile[k]===null)state.profile[k]=defaults[k]});
+ if(!state.schedules.length) state.schedules=demo;
+ applyTheme(); renderNav(); bindSearch(); renderAll();
+ if(!state.chat.length){state.chat=[{role:"bot",text:"Xin chào! Mình là StudyBot 🤖\\nMình có thể đọc thời khóa biểu, chỉ số, cảnh báo và thống kê của bạn. Bạn có thể hỏi mình bất cứ điều gì về lịch học."}];}
+ renderChat();
+}
+function persist(){localStorage.setItem(authKey(),JSON.stringify(state))}
+function toast(t){const x=document.getElementById("toast");x.textContent=t;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),2200)}
+function renderNav(){document.getElementById("nav").innerHTML=NAV.map(n=>`<button data-page="${n[0]}" onclick="navigate('${n[0]}')"><span>${n[1]}</span><span>${n[2]}</span></button>`).join("");document.querySelector('[data-page="dashboard"]').classList.add("active")}
+function navigate(page){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById("page-"+page).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===page));if(page==="stats")renderCharts();if(page==="schedule")renderSchedule();if(page==="ai")renderCoach()}
+function saveProfile(){state.profile.name=document.getElementById("profileName").value||"Học sinh";state.profile.grade=document.getElementById("profileGrade").value||"7";state.profile.school=document.getElementById("profileSchool").value;state.profile.goal=document.getElementById("profileGoal").value;state.profile.targetSleep=+document.getElementById("targetSleep").value||8;state.profile.targetStudy=+document.getElementById("targetStudy").value||2;persist();renderAll();toast("Đã lưu hồ sơ ✓")}
+function loadProfile(){for(const [id,key] of [["profileName","name"],["profileGrade","grade"],["profileSchool","school"],["profileGoal","goal"],["targetSleep","targetSleep"],["targetStudy","targetStudy"]])document.getElementById(id).value=state.profile[key]??""}
+function toggleTheme(){state.theme=state.theme==="dark"?"light":"dark";persist();applyTheme();renderCharts()}
+function applyTheme(){document.body.classList.toggle("dark",state.theme==="dark");const s=document.getElementById("darkSwitch");if(s)s.classList.toggle("on",state.theme==="dark")}
+function setAccent(c){document.documentElement.style.setProperty("--primary",c);localStorage.setItem("lifemetric_accent",c);toast("Đã đổi màu chủ đạo ✓")}
+function setThemeMode(m){ if(m==="dark"){state.theme="dark";document.body.classList.add("dark")} else if(m==="light"){state.theme="light";document.body.classList.remove("dark")} else {state.theme=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.body.classList.toggle("dark",state.theme==="dark")} persist(); }
+function changeFont(n){state.font=Math.max(13,Math.min(19,(state.font||15)+n));document.body.style.fontSize=state.font+"px";persist()}
+function bindSearch(){
+ const input=document.getElementById("globalSearch"),box=document.getElementById("searchSuggestions");
+ if(!input||input.dataset.bound)return; input.dataset.bound="1";
+ input.addEventListener("input",()=>renderSearchSuggestions(input.value));
+ input.addEventListener("keydown",e=>{if(e.key==="Escape"){box.classList.remove("show");input.blur()} if(e.key==="Enter"){const first=box.querySelector("button");if(first)first.click()}});
+ document.addEventListener("click",e=>{if(!e.target.closest(".search"))box.classList.remove("show")});
+}
+function renderSearchSuggestions(query){
+ const box=document.getElementById("searchSuggestions"); if(!box)return;
+ const q=query.trim().toLowerCase(); if(!q){box.classList.remove("show");box.innerHTML="";return;}
+ const norm=x=>String(x).toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g,"");
+ const nq=norm(q), items=[];
+ const pages=[
+  ["schedule","📅","Thời khóa biểu","Quản lý lịch học và hoạt động"],["analysis","📊","Phân tích học tập","Xem tải học tập và cảnh báo"],["health","❤️","Sức khỏe & cân bằng","Theo dõi nghỉ ngơi và giấc ngủ"],["optimize","🧮","Tối ưu thời khóa biểu","So sánh và chọn phương án tốt nhất"],["ai","🤖","AI Coach / StudyBot","Hỏi StudyBot về lịch học"],["stats","📈","Thống kê dữ liệu","Xem xu hướng học tập"]
+ ];
+ pages.forEach(x=>{if(norm(x[2]).includes(nq)||norm(x[3]).includes(nq))items.push(`<button onclick="searchPick('${x[0]}')">${x[1]}<span><b>${x[2]}</b><small>${x[3]}</small></span></button>`)});
+ const subjects=[...new Set(state.schedules.map(x=>x.subject).filter(Boolean))].filter(x=>norm(x).includes(nq)).slice(0,4);
+ subjects.forEach(x=>items.push(`<button onclick="searchPick('schedule')">📚<span><b>${escapeHTML(x)}</b><small>Môn học trong thời khóa biểu</small></span></button>`));
+ const alerts=state.alerts.filter(a=>norm(a.title+" "+a.detail).includes(nq)).slice(0,3);
+ alerts.forEach(a=>items.push(`<button onclick="searchPick('analysis')">⚠️<span><b>${escapeHTML(a.title)}</b><small>${escapeHTML(a.detail)}</small></span></button>`));
+ if(!items.length)items.push(`<button disabled>🔎<span><b>Không tìm thấy kết quả</b><small>Thử “lịch”, “phân tích”, “tối ưu”, tên môn hoặc “StudyBot”.</small></span></button>`);
+ box.innerHTML=items.slice(0,7).join("");box.classList.add("show");
+}
+function searchPick(page){const input=document.getElementById("globalSearch"),box=document.getElementById("searchSuggestions");if(page==="ai")openChat();else navigate(page);box.classList.remove("show");if(input)input.blur()}
+
+function mins(t){const [h,m]=t.split(":").map(Number);return h*60+m}
+function duration(x){return Math.max(0,(mins(x.end)-mins(x.start))/60)}
+function calc(){
+ let daily={};DAYS.forEach(d=>daily[d]={class:0,self:0,rest:0,load:0,hard:0,count:0});
+ state.schedules.forEach(x=>{let d=daily[x.day]||daily[DAYS[0]],h=duration(x);d[x.type]=(d[x.type]||0)+h;if(x.type==="class"||x.type==="self"){d.load+=h*(+x.difficulty||1);d.count++;if(+x.difficulty>=4)d.hard++}});
+ const vals=DAYS.map(d=>daily[d]);
+ const avgLoad=vals.reduce((a,d)=>a+d.load,0)/7;
+ const load=Math.round(Math.min(100,avgLoad*10));
+ const scheduleRest=vals.reduce((a,d)=>a+d.rest,0)/7;
+ const avgRest=(+state.profile.dailyRest>=0?+state.profile.dailyRest:scheduleRest);
+ const rest=Math.round(Math.max(0,Math.min(100,70+avgRest*15)));
+ const sleep=+state.profile.dailySleep||+state.profile.targetSleep||8;
+ const sleepScore=Math.round(Math.max(35,Math.min(100,100-Math.abs(8-sleep)*12)));
+ const overload=vals.filter(d=>d.load>9||d.hard>=3).length;
+ const health=Math.round(Math.max(25,Math.min(100,sleepScore*.6+rest*.25+(100-overload*10)*.15)));
+ const feasibility=Math.max(0,100-overload*10);
+ const balance=Math.round(.30*(100-load*.65)+.22*rest+.20*sleepScore+.18*health+.10*feasibility);
+ return {daily,load,rest,health,balance:Math.max(0,Math.min(100,balance)),avgRest,sleepScore,overload};
+}
+function recalculate(){
+ const c=calc();
+ state.scores={load:c.load,rest:c.rest,health:c.health,balance:c.balance};
+ state.alerts=generateAlerts(c);
+ persist();
+ return c;
+}
+function recalculateAndShow(){
+ try{
+  const c=recalculate();
+  // Cập nhật ngay các khu vực liên quan, không phụ thuộc vào biểu đồ.
+  document.getElementById("overall").textContent=c.balance;
+  document.getElementById("loadScore").textContent=c.load;
+  document.getElementById("restScore").textContent=c.rest;
+  document.getElementById("healthScore").textContent=c.health;
+  document.getElementById("aLoad").textContent=c.load+"/100";
+  document.getElementById("aBalance").textContent=c.balance+"/100";
+  document.getElementById("aHealth").textContent=c.health+"/100";
+  document.getElementById("alertCount").textContent=state.alerts.length;
+  document.getElementById("aLoadBar").style.width=c.load+"%";
+  document.getElementById("aBalanceBar").style.width=c.balance+"%";
+  document.getElementById("aHealthBar").style.width=c.health+"%";
+  renderAlerts();
+  renderHealth();
+  renderCoach();
+  navigate("analysis");
+  // Biểu đồ được cập nhật separatly; nếu có lỗi biểu đồ, nút phân tích vẫn hoạt động.
+  try{renderCharts()}catch(e){}
+  toast("Đã phân tích lại dữ liệu ✓");
+ }catch(e){
+  console.error("recalculateAndShow:",e);
+  toast("Đã phân tích nhưng có lỗi khi cập nhật giao diện");
+ }
+}
+function generateAlerts(c){
+ const a=[];
+ c.overload && a.push({level:"danger",title:"Lịch học có nguy cơ quá tải",detail:`Có ${c.overload} ngày có tải cao hoặc nhiều môn khó liên tiếp.`});
+ DAYS.forEach(d=>{const x=c.daily[d];if(x.hard>=3)a.push({level:"warn",title:`${d}: nhiều môn khó liên tiếp`,detail:`Có ${x.hard} hoạt động độ khó từ 4/5 trở lên.`});if(x.load>10)a.push({level:"danger",title:`${d}: tải học tập cao`,detail:`Tải ước tính ${x.load.toFixed(1)} điểm.`})});
+ if(c.avgRest<.5)a.push({level:"warn",title:"Thiếu thời gian nghỉ",detail:"Nên bố trí thêm các khoảng nghỉ giữa phiên học."});
+ if((+state.profile.targetSleep||8)<7.5)a.push({level:"danger",title:"Mục tiêu ngủ đang thấp",detail:"Hãy điều chỉnh mục tiêu sinh hoạt phù hợp."});
+ return a.slice(0,8);
+}
+function updateDailyInputs(){
+ const p=state.profile;
+ p.dailyClass=Math.max(0,+document.getElementById("dailyClassInput").value||0);
+ p.dailySelf=Math.max(0,+document.getElementById("dailySelfInput").value||0);
+ p.dailyRest=Math.max(0,+document.getElementById("dailyRestInput").value||0);
+ p.dailySleep=Math.max(0,+document.getElementById("dailySleepInput").value||0);
+ p.subjectGoal=Math.max(1,+document.getElementById("subjectGoalInput").value||1);
+ p.targetSleep=p.dailySleep;
+ p.targetStudy=p.dailySelf;
+ persist();
+ recalculate();
+}
+function renderAll(){const c=calc();state.scores={load:c.load,rest:c.rest,health:c.health,balance:c.balance};state.alerts=generateAlerts(c);persist();
+ document.getElementById("heroName").textContent=state.profile.name;document.getElementById("sideName").textContent=state.profile.name;document.getElementById("sideClass").textContent="Lớp "+state.profile.grade;document.getElementById("sideAvatar").textContent=(state.profile.name||"H").charAt(0).toUpperCase();
+ document.getElementById("overall").textContent=c.balance;document.getElementById("overallRing").style.setProperty("--score",c.balance);document.getElementById("loadScore").textContent=c.load;document.getElementById("restScore").textContent=c.rest;document.getElementById("healthScore").textContent=c.health;
+ ["load","rest","health"].forEach(k=>{document.getElementById(k+"Bar").style.width=state.scores[k]+"%"});
+ const all=state.schedules.filter(x=>x.type==="class"),self=state.schedules.filter(x=>x.type==="self");const avgClass=+state.profile.dailyClass||all.reduce((a,x)=>a+duration(x),0)/7,avgSelf=+state.profile.dailySelf||self.reduce((a,x)=>a+duration(x),0)/7;
+ document.getElementById("classHours").textContent=avgClass.toFixed(1).replace(".0","")+"h";document.getElementById("selfHours").textContent=avgSelf.toFixed(1).replace(".0","")+"h";document.getElementById("restHours").textContent=c.avgRest.toFixed(1)+"h";document.getElementById("sleepHours").textContent=(state.profile.dailySleep||state.profile.targetSleep||8)+"h";document.getElementById("subjectCount").textContent=state.profile.subjectGoal||new Set(all.map(x=>x.subject)).size;document.getElementById("alertCount").textContent=state.alerts.length;
+ ["dailyClassInput","dailySelfInput","dailyRestInput","dailySleepInput","subjectGoalInput"].forEach(id=>{const el=document.getElementById(id);if(el) el.value=id.includes("Class")?state.profile.dailyClass:id.includes("Self")?state.profile.dailySelf:id.includes("Rest")?state.profile.dailyRest:id.includes("Sleep")?state.profile.dailySleep:state.profile.subjectGoal});
+ document.getElementById("aLoad").textContent=c.load+"/100";document.getElementById("aBalance").textContent=c.balance+"/100";document.getElementById("aHealth").textContent=c.health+"/100";document.getElementById("aLoadBar").style.width=c.load+"%";document.getElementById("aBalanceBar").style.width=c.balance+"%";document.getElementById("aHealthBar").style.width=c.health+"%";
+ renderAlerts();renderSchedule();renderHealth();renderCoach();renderCharts();loadProfile();renderConstraints();
+}
+function alertHTML(a){return `<div class="alert ${a.level==="danger"?"d":a.level==="good"?"g":""}"><div class="aicon">${a.level==="danger"?"⚠️":a.level==="warn"?"🔸":"✓"}</div><div><b>${a.title}</b><small>${a.detail}</small></div></div>`}
+function renderAlerts(){const html=state.alerts.length?state.alerts.map(alertHTML).join(""):`<div class="empty">🎉 Chưa phát hiện cảnh báo đáng chú ý.</div>`;document.getElementById("dashboardAlerts").innerHTML=html;document.getElementById("analysisAlerts").innerHTML=html}
+function renderSchedule(){
+ const grid=document.getElementById("scheduleGrid");
+ if(!grid)return;let h=`<div class="sg-head">Giờ</div>${DAYS.map(d=>`<div class="sg-head">${d}</div>`).join("")}`;
+ for(let hour=7;hour<=20;hour++){h+=`<div class="sg-time">${String(hour).padStart(2,"0")}:00</div>`;for(const day of DAYS){const ev=state.schedules.filter(x=>x.day===day&&Math.floor(mins(x.start)/60)===hour);h+=`<div class="sg-cell">${ev.map(x=>`<div class="event ${x.type==="rest"?"rest":x.type==="ext"?"ext":x.difficulty>=4?"hard":""}">${x.subject}<br><small>${x.start}-${x.end}</small></div>`).join("")}</div>`}}grid.innerHTML=h;
+ document.getElementById("scheduleTable").innerHTML=state.schedules.map(x=>`<tr><td><span class="pill subject">${x.subject}</span></td><td>${x.day}</td><td>${x.start}–${x.end}</td><td>${typeName(x.type)}</td><td><span class="pill difficulty">${x.difficulty}/5</span></td><td><button type="button" class="btn btn-danger" onclick='deleteSchedule(${JSON.stringify(String(x.id))})'>Xóa</button></td></tr>`).join("")||`<tr><td colspan="6" class="empty">Chưa có dữ liệu.</td></tr>`;
+}
+function typeName(t){return {class:"Học trên lớp",self:"Tự học",rest:"Nghỉ",ext:"Ngoại khóa"}[t]||t}
+function openScheduleForm(id=null){
+ editingId=id;
+ document.getElementById("modal").style.display="grid";
+ if(id){
+  const x=state.schedules.find(s=>s.id===id);
+  if(!x)return;
+  document.getElementById("fSubject").value=x.subject||"";
+  document.getElementById("fDay").value=x.day||"Thứ 2";
+  document.getElementById("fStart").value=x.start||"16:00";
+  document.getElementById("fEnd").value=x.end||"17:00";
+  document.getElementById("fDiff").value=x.difficulty||3;
+  document.getElementById("fType").value=x.type||"self";
+ }else{
+  document.getElementById("fSubject").value="";
+  document.getElementById("fDay").value="Thứ 2";
+  document.getElementById("fStart").value="16:00";
+  document.getElementById("fEnd").value="17:00";
+  document.getElementById("fDiff").value=3;
+  document.getElementById("fType").value="self";
+ }
+}
+function closeModal(){document.getElementById("modal").style.display="none";editingId=null}
+function saveSchedule(){
+ const wasEditing=!!editingId;
+ const x={
+  id:editingId||Date.now(),
+  subject:document.getElementById("fSubject").value.trim()||"Môn mới",
+  day:document.getElementById("fDay").value,
+  start:document.getElementById("fStart").value,
+  end:document.getElementById("fEnd").value,
+  difficulty:+document.getElementById("fDiff").value,
+  type:document.getElementById("fType").value
+ };
+ if(mins(x.end)<=mins(x.start)){toast("Giờ kết thúc phải sau giờ bắt đầu");return}
+ if(editingId) state.schedules=state.schedules.map(s=>s.id===editingId?x:s);
+ else state.schedules.push(x);
+ persist();
+ closeModal();
+ renderSchedule();
+ recalculate();
+ renderSchedule();
+ navigate("schedule");
+ toast(wasEditing?"Đã cập nhật hoạt động ✓":"Đã thêm hoạt động vào thời khóa biểu ✓");
+}
+function deleteSchedule(id){
+ const key=String(id);
+ const before=state.schedules.length;
+ state.schedules=state.schedules.filter(x=>String(x.id)!==key);
+ if(state.schedules.length===before){toast("Không tìm thấy hoạt động để xóa");return}
+ persist();
+ renderSchedule();
+ recalculate();
+ renderSchedule();
+ navigate("schedule");
+ toast("Đã xóa hoạt động ✓");
+}
+window.deleteSchedule=deleteSchedule;
+function loadDemo(){state.schedules=demo.map(x=>({...x,id:Math.random()}));recalculate();toast("Đã nạp dữ liệu mẫu")}
+function renderHealth(){const c=calc();document.getElementById("healthDetails").innerHTML=[["😴","Ngủ mục tiêu",state.profile.targetSleep+" giờ"],["☕","Nghỉ trung bình",c.avgRest.toFixed(1)+" giờ"],["📚","Tải học tập",c.load+"/100"],["⚖️","Cân bằng",c.balance+"/100"],["❤️","Sức khỏe",c.health+"/100"]].map(x=>`<div class="kpi" style="padding:13px 0;border-bottom:1px solid var(--border)"><div class="left"><span>${x[0]}</span><b>${x[1]}</b></div><strong>${x[2]}</strong></div>`).join("")}
+function renderConstraints(){document.getElementById("constraints").innerHTML=["Không trùng lịch","Không vượt tải học tập/ngày","Có khoảng nghỉ giữa phiên học","Không giảm ngủ dưới mục tiêu","Không xếp quá nhiều môn khó liên tiếp","Giữ lịch học thực tế"].map(x=>`<div class="alert g"><div class="aicon">✓</div><div><b>${x}</b></div></div>`).join("")}
+function scheduleScore(variant){
+ const old=state.schedules;state.schedules=variant;const c=calc();state.schedules=old;
+ const conflict=variant.filter((x,i)=>variant.some((y,j)=>i<j&&x.day===y.day&&Math.max(mins(x.start),mins(y.start))<Math.min(mins(x.end),mins(y.end))&&x.type!=="rest"&&y.type!=="rest")).length;
+ const score=Math.round(.34*(100-c.load)+.20*c.rest+.20*c.health+.16*c.sleepScore+.10*Math.max(0,100-c.overload*15-conflict*20));
+ return {score,c,conflict};
+}
+function hasTimeConflict(arr,item){return arr.some(x=>x.id!==item.id&&x.day===item.day&&x.type!=="rest"&&item.type!=="rest"&&Math.max(mins(x.start),mins(item.start))<Math.min(mins(x.end),mins(item.end)))}
+function optimize(){
+ try{
+  const original=JSON.parse(JSON.stringify(state.schedules));
+  if(!original.length){
+   toast("Chưa có hoạt động để tối ưu");
+   return;
+  }
+
+  // Tạo nhiều phương án hợp lệ từ các phiên tự học rồi chấm điểm bằng mô hình.
+  const selfEvents=original.filter(x=>x.type==="self");
+  let candidates=[{data:original,result:scheduleScore(original)}];
+  const slots=["15:00","16:00","17:00","18:00","19:00","20:00"];
+
+  for(const ev of selfEvents){
+   const base=currentCandidate=candidates[0].data;
+   for(const day of DAYS){
+    for(const start of slots){
+     const dur=duration(ev);
+     const endM=mins(start)+dur*60;
+     if(endM>21*60)continue;
+     const moved={...ev,day,start,end:toTime(endM)};
+     const variant=base.map(x=>x.id===ev.id?moved:x);
+     if(hasTimeConflict(variant,moved))continue;
+     candidates.push({data:variant,result:scheduleScore(variant)});
+    }
+   }
+  }
+
+  candidates.sort((a,b)=>b.result.score-a.result.score);
+  const best=candidates[0];
+  const current=best.data;
+  const before=scheduleScore(original).score;
+  const after=best.result.score;
+  const changed=JSON.stringify(original)!==JSON.stringify(current);
+
+  // Ghi lại những thay đổi thực tế.
+  const changes=[];
+  for(const oldEv of original){
+   const newEv=current.find(x=>String(x.id)===String(oldEv.id));
+   if(newEv && (oldEv.day!==newEv.day||oldEv.start!==newEv.start||oldEv.end!==newEv.end)){
+    changes.push(`${oldEv.subject}: ${oldEv.day} ${oldEv.start}–${oldEv.end} → ${newEv.day} ${newEv.start}–${newEv.end}`);
+   }
+  }
+
+  state.schedules=current;
+  state.optCount=(+state.optCount||0)+1;
+  recalculate();
+  persist();
+
+  const changeText=changes.length
+   ?changes.map(x=>`<li>${escapeHTML(x)}</li>`).join("")
+   :"<li>Không cần đổi lịch: phương án hiện tại đã có điểm cao nhất trong các phương án hợp lệ được thử.</li>";
+
+  const box=document.getElementById("optimizationResult");
+  if(box){
+   box.className="";
+   box.innerHTML=`<div class="compare"><div class="compare-card"><div class="muted">Trước tối ưu</div><div class="big-score">${before}</div><p class="muted">Điểm mô hình ban đầu.</p></div><div class="compare-card best"><div class="muted">Sau tối ưu</div><div class="big-score" style="color:var(--green)">${after}</div><span class="badge good">✓ Đã chọn</span><p class="muted">Đã thử ${candidates.length} phương án hợp lệ.</p></div></div><div class="mt"><b>Thay đổi thực tế</b><ul>${changeText}</ul></div><div class="alert g mt"><div class="aicon">✓</div><div><b>${changed?"Đã áp dụng thời khóa biểu tối ưu":"Lịch hiện tại đã là phương án tốt nhất"}</b><small>${changed?`Điểm tối ưu tăng từ ${before} lên ${after}.`:`Không tìm thấy phương án khác có điểm cao hơn ${after}.`}</small></div></div>`;
+  }
+
+  renderSchedule();
+  try{renderCharts()}catch(e){}
+  navigate("optimize");
+  toast(changed?`Đã tối ưu lịch: ${before} → ${after} ✨`:`Lịch hiện tại đã tối ưu ✓`);
+ }catch(e){
+  console.error("optimize:",e);
+  toast("Không thể chạy tối ưu. Hãy thử lại.");
+ }
+}
+window.recalculateAndShow=recalculateAndShow;
+window.optimize=optimize;
+window.setStatsPeriod=setStatsPeriod;
+function toTime(m){m=((m%1440)+1440)%1440;return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0")}
+function diffSchedule(arr,base){return [`Tối ưu ưu tiên giảm các cụm môn khó liên tiếp.`,`Điều chỉnh thời gian tự học để giảm mật độ tải.`,`Giữ các hoạt động cố định và tránh xung đột thời gian.`]}
+function renderCoach(){const c=calc();let lines=[];if(c.load>70)lines.push(`📚 Tải học tập hiện ở mức ${c.load}/100, cần chú ý các ngày có nhiều môn khó.`);else lines.push(`📚 Tải học tập ${c.load}/100 đang ở mức có thể quản lý.`);if(c.avgRest<.7)lines.push(`☕ Thời gian nghỉ trung bình chỉ khoảng ${c.avgRest.toFixed(1)} giờ/ngày.`);if(c.overload)lines.push(`⚠️ Mình phát hiện ${c.overload} ngày có nguy cơ quá tải.`);if(!lines.length)lines.push("🌱 Lịch hiện tại khá cân bằng.");document.getElementById("coachText").innerHTML=lines.map(x=>`<div class="alert"><div class="aicon">🤖</div><div><b>StudyBot phân tích</b><small>${x}</small></div></div>`).join("");document.getElementById("coachTips").innerHTML=["Tách các phiên tự học dài thành các phiên nhỏ hơn.","Đặt khoảng nghỉ ngắn giữa các phiên học.","Ưu tiên môn khó vào thời điểm bạn tỉnh táo nhất.","Dùng chức năng Tối ưu để so sánh nhiều phương án."].map(x=>`<div class="alert g"><div class="aicon">💡</div><div><b>${x}</b></div></div>`).join("")}
+function setStatsPeriod(period){
+ statsPeriod=period||"7";
+ const tabs=document.querySelectorAll("#statsTabs button");
+ tabs.forEach(b=>b.classList.toggle("active",b.dataset.period===statsPeriod));
+ const badge=document.querySelector("#page-stats .badge");
+ if(badge) badge.textContent=statsPeriod==="7"?"7 ngày":statsPeriod==="30"?"30 ngày":"Tất cả";
+ try{renderStatsCharts()}catch(e){console.error("stats period:",e)}
+ toast(statsPeriod==="7"?"Đang xem dữ liệu 7 ngày":statsPeriod==="30"?"Đang xem dữ liệu 30 ngày":"Đang xem tất cả dữ liệu");
+}
+function getStatsData(){
+ const c=calc();
+ // Lịch hiện tại là lịch tuần. Với 30 ngày, mô hình lặp tuần để tạo chuỗi theo ngày.
+ // "Tất cả" dùng toàn bộ lịch hiện đang lưu (7 ngày mẫu tuần).
+ if(statsPeriod==="7") return {labels:DAYS.slice(), multiplier:1};
+ if(statsPeriod==="30"){
+  const labels=[];
+  for(let i=1;i<=30;i++) labels.push("Ngày "+i);
+  return {labels,multiplier:30/7};
+ }
+ return {labels:DAYS.slice(), multiplier:1};
+}
+function renderStatsCharts(){
+ const c=calc();
+ const info=getStatsData();
+ const labels=info.labels;
+ const dailyLoad=DAYS.map(d=>+(c.daily[d].load).toFixed(1));
+ const dailyClass=DAYS.map(d=>+(c.daily[d].class).toFixed(1));
+ const dailySelf=DAYS.map(d=>+(c.daily[d].self).toFixed(1));
+ const dailyRest=DAYS.map(d=>+(c.daily[d].rest).toFixed(1));
+ let loadData,classData,selfData,restData,balanceData;
+ if(statsPeriod==="30"){
+  loadData=labels.map((_,i)=>dailyLoad[i%7]);
+  classData=labels.map((_,i)=>dailyClass[i%7]);
+  selfData=labels.map((_,i)=>dailySelf[i%7]);
+  restData=labels.map((_,i)=>dailyRest[i%7]);
+  balanceData=labels.map((_,i)=>Math.max(45,Math.min(98,c.balance-(dailyLoad[i%7]-6)*4)));
+ }else{
+  loadData=dailyLoad;classData=dailyClass;selfData=dailySelf;restData=dailyRest;
+  balanceData=labels.map(d=>Math.max(45,Math.min(98,c.balance-(c.daily[d].load-6)*4)));
+ }
+ charts.stats?.destroy();
+ const statsCanvas=document.getElementById("statsChart");
+ if(statsCanvas&&typeof Chart!=="undefined") charts.stats=new Chart(statsCanvas,{type:"line",data:{labels,datasets:[{label:"Học",data:classData,borderColor:"#6c63ff",tension:.35},{label:"Tự học",data:selfData,borderColor:"#35b8d8",tension:.35},{label:"Nghỉ",data:restData,borderColor:"#20b486",tension:.35}]},options:{responsive:true,maintainAspectRatio:false}});
+ charts.balance?.destroy();
+ const balanceCanvas=document.getElementById("balanceChart");
+ if(balanceCanvas&&typeof Chart!=="undefined") charts.balance=new Chart(balanceCanvas,{type:"line",data:{labels,datasets:[{label:"Balance",data:balanceData,borderColor:"#20b486",backgroundColor:"#20b48622",fill:true,tension:.35}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:0,max:100}}}});
+ const totalWeek=state.schedules.filter(x=>x.type==="class"||x.type==="self").reduce((a,x)=>a+duration(x),0);
+ const restWeek=state.schedules.filter(x=>x.type==="rest").reduce((a,x)=>a+duration(x),0);
+ const totalStudy=document.getElementById("totalStudy");
+ const avgSleep=document.getElementById("avgSleep");
+ const optCount=document.getElementById("optCount");
+ if(totalStudy) totalStudy.textContent=(totalWeek*(statsPeriod==="30"?30/7:1)).toFixed(1)+"h";
+ if(avgSleep) avgSleep.textContent=(state.profile.targetSleep||8)+"h";
+ if(optCount) optCount.textContent=state.optCount;
+ const note=document.getElementById("statsPeriodNote");
+ if(note) note.textContent=statsPeriod==="30"?"30 ngày được mô phỏng từ lịch tuần hiện tại.":statsPeriod==="all"?"Đang hiển thị toàn bộ lịch hiện được lưu.":"Đang hiển thị lịch 7 ngày hiện tại.";
+}
+function renderCharts(){
+ if(typeof Chart==="undefined")return;
+ Chart.defaults.color=document.body.classList.contains("dark")?"#aab6d0":"#71809d";
+ Chart.defaults.borderColor=document.body.classList.contains("dark")?"#33405f":"#e7ebf5";
+ const c=calc();const labels=DAYS;
+ charts.weekly?.destroy();
+ const weeklyCanvas=document.getElementById("weeklyChart");
+ if(weeklyCanvas) charts.weekly=new Chart(weeklyCanvas,{type:"bar",data:{labels,datasets:[{label:"Tải",data:labels.map(d=>+(c.daily[d].load).toFixed(1)),backgroundColor:"#6c63ff",borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+ const subjectMap={};state.schedules.filter(x=>x.type==="class"||x.type==="self").forEach(x=>{if(!subjectMap[x.subject])subjectMap[x.subject]=[];subjectMap[x.subject].push(+x.difficulty||3)});
+ const dif=[1,2,3,4,5].map(n=>Object.values(subjectMap).filter(v=>Math.round(v.reduce((a,b)=>a+b,0)/v.length)===n).length);
+ charts.difficulty?.destroy();
+ const diffCanvas=document.getElementById("difficultyChart");
+ if(diffCanvas) charts.difficulty=new Chart(diffCanvas,{type:"bar",data:{labels:["1 – Rất dễ","2 – Dễ","3 – Trung bình","4 – Khó","5 – Rất khó"],datasets:[{label:"Số môn",data:dif,backgroundColor:["#cceff5","#9ed8ff","#b8adff","#ffb9c9","#ff9f7c"],borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:"y",plugins:{legend:{display:true}},scales:{x:{beginAtZero:true,ticks:{precision:0}}}}});
+ charts.radar?.destroy();
+ const radarCanvas=document.getElementById("radarChart");
+ if(radarCanvas) charts.radar=new Chart(radarCanvas,{type:"radar",data:{labels:["Học tập","Nghỉ ngơi","Ngủ","Sức khỏe","Cân bằng"],datasets:[{label:"LifeMetric",data:[100-c.load,c.rest,c.sleepScore,c.health,c.balance],backgroundColor:"#6c63ff22",borderColor:"#6c63ff",pointBackgroundColor:"#6c63ff"}]},options:{responsive:true,maintainAspectRatio:false,scales:{r:{beginAtZero:true,max:100}}}});
+ renderStatsCharts();
+}
+function openChat(){document.getElementById("chat").classList.add("open");renderChat();document.getElementById("chatInput").focus()}
+function closeChat(){document.getElementById("chat").classList.remove("open")}
+function renderChat(){document.getElementById("chatBody").innerHTML=state.chat.map(m=>`<div class="msg ${m.role}"><div class="bubble">${escapeHTML(m.text)}</div></div>`).join("");const b=document.getElementById("chatBody");b.scrollTop=b.scrollHeight}
+function escapeHTML(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function quickAsk(t){document.getElementById("chatInput").value=t;sendChat()}
+function sendChat(){const input=document.getElementById("chatInput");const q=input.value.trim();if(!q)return;state.chat.push({role:"user",text:q});input.value="";renderChat();setTimeout(()=>{const ans=botAnswer(q);state.chat.push({role:"bot",text:ans});persist();renderChat()},280)}
+function botAnswer(q){
+ const t=q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
+ const c=calc();
+ const words=t.split(/\s+/);
+ const dayMap={"thu 2":"Thứ 2","thu 3":"Thứ 3","thu 4":"Thứ 4","thu 5":"Thứ 5","thu 6":"Thứ 6","thu 7":"Thứ 7","chu nhat":"CN","cn":"CN"};
+ let day=DAYS.find(d=>t.includes(d.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""))) || Object.keys(dayMap).find(k=>t.includes(k)) && dayMap[Object.keys(dayMap).find(k=>t.includes(k))];
+ const target=day||DAYS[new Date().getDay()===0?6:new Date().getDay()-1];
+ const d=c.daily[target];
+ const totalStudy=state.schedules.filter(x=>x.type==='class'||x.type==='self').reduce((a,x)=>a+duration(x),0);
+ const subjectLoad={}; state.schedules.filter(x=>x.type==='class'||x.type==='self').forEach(x=>subjectLoad[x.subject]=(subjectLoad[x.subject]||0)+duration(x)*(+x.difficulty||1));
+ const ranked=Object.entries(subjectLoad).sort((a,b)=>b[1]-a[1]);
+ if(t.includes('xin chao')||t==='hi'||t.includes('hello')) return `Chào bạn 👋 Mình là StudyBot của LifeMetric.\n\nMình đang đọc ${state.schedules.length} hoạt động trong lịch, ${state.alerts.length} cảnh báo và các chỉ số hiện tại. Bạn có thể hỏi mình về từng ngày, môn học, giấc ngủ, nghỉ ngơi, điểm số hoặc yêu cầu tối ưu lịch.`;
+ if(t.includes('qua tai')||t.includes('qua nhieu')||t.includes('canh bao')){
+   const high=DAYS.filter(x=>c.daily[x].load>9||c.daily[x].hard>=3);
+   return `${target} có ${d.class.toFixed(1)} giờ học trên lớp + ${d.self.toFixed(1)} giờ tự học, tải khoảng ${d.load.toFixed(1)} và ${d.hard} môn khó.\n\n${d.load>9||d.hard>=3?'⚠️ Đây là ngày cần chú ý: mật độ học đang cao.':'✓ Chưa thấy dấu hiệu quá tải rõ rệt.'}\n\nToàn tuần: ${high.length} ngày có nguy cơ cao và ${state.alerts.length} cảnh báo. Điểm tải chung ${c.load}/100.`;
+ }
+ if(t.includes('phan tich')||t.includes('chi so')||t.includes('diem')||t.includes('balance')) return `Bản phân tích hiện tại:\n• Tải học tập: ${c.load}/100\n• Nghỉ ngơi: ${c.rest}/100\n• Sức khỏe: ${c.health}/100\n• Cân bằng: ${c.balance}/100\n• Ngủ mục tiêu: ${state.profile.targetSleep} giờ/ngày\n• Tổng học + tự học: ${totalStudy.toFixed(1)} giờ/tuần\n\nMình có thể giải thích vì sao từng điểm số thay đổi nếu bạn hỏi tiếp.`;
+ if(t.includes('ngu')||t.includes('giac ngu')||t.includes('sleep')) return `Mục tiêu ngủ của bạn đang là ${state.profile.targetSleep} giờ/ngày. LifeMetric đưa chỉ số ngủ vào Balance Score và Health Index.\n\nLưu ý: đây là mô hình theo dõi thói quen, không phải chẩn đoán y tế.`;
+ if(t.includes('nghi')||t.includes('break')) return `Thời gian nghỉ trung bình hiện khoảng ${c.avgRest.toFixed(1)} giờ/ngày. Trong mô hình, nghỉ ngơi ảnh hưởng trực tiếp đến Rest Index và Balance Score. Nếu một ngày có nhiều phiên liên tiếp, mình sẽ ưu tiên chèn nghỉ khi tối ưu.`;
+ if(t.includes('mon nao')||t.includes('mon hoc')||t.includes('ton nhieu')||t.includes('tai lon')) return ranked.length?`Môn tạo tải lớn nhất hiện tại là “${ranked[0][0]}” với khoảng ${ranked[0][1].toFixed(1)} đơn vị tải (thời lượng × độ khó).\n\nTop 3:\n${ranked.slice(0,3).map((x,i)=>`${i+1}. ${x[0]} — ${x[1].toFixed(1)}`).join('\n')}`:'Chưa có đủ dữ liệu môn học.';
+ if(t.includes('thong ke')||t.includes('tuan nay')||t.includes('bao nhieu gio')) return `Thống kê hiện tại:\n• ${state.schedules.length} hoạt động\n• ${new Set(state.schedules.map(x=>x.subject)).size} môn/hoạt động\n• ${totalStudy.toFixed(1)} giờ học + tự học/tuần\n• ${c.avgRest.toFixed(1)} giờ nghỉ/ngày\n• ${state.profile.targetSleep} giờ ngủ mục tiêu\n• ${state.alerts.length} cảnh báo`;
+ if(t.includes('toi uu')||t.includes('sap xep')||t.includes('de xuat')) { optimize(); return `Mình đã chạy bộ tối ưu đa mục tiêu. Hệ thống so sánh nhiều phương án, ưu tiên giảm tải, tăng nghỉ, giữ ngủ và tránh xung đột. Bạn mở mục “Tối ưu” để xem phương án được chọn và lý do thay đổi.`; }
+ if(t.includes('hom nay')) return `Nếu lấy ${target} làm ngày hiện tại trong dữ liệu của bạn: ${d.class.toFixed(1)} giờ học trên lớp, ${d.self.toFixed(1)} giờ tự học, tải ${d.load.toFixed(1)} và ${d.hard} môn khó. ${d.load>9||d.hard>=3?'Mình sẽ đánh dấu ngày này cần chú ý.':'Lịch đang tương đối ổn.'}`;
+ return `Mình chưa chắc bạn muốn phân tích phần nào. Bạn có thể hỏi tự nhiên như:\n• “Thứ 3 có quá tải không?”\n• “Môn nào tạo tải lớn nhất?”\n• “Điểm cân bằng của mình là bao nhiêu?”\n• “Tuần này mình học bao nhiêu giờ?”\n• “Tối ưu lịch học của mình.”`;
+}
+function openChat(){document.getElementById("chat").classList.add("open");renderChat();document.getElementById("chatInput").focus()}
+function closeChat(){document.getElementById("chat").classList.remove("open")}
+bootAuth();
+const accent=localStorage.getItem("lifemetric_accent");if(accent)setAccent(accent);
+</script>
+</body>
+</html>
